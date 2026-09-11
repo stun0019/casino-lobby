@@ -28,6 +28,7 @@ header{height:58px;display:flex;align-items:center;gap:28px;margin-bottom:18px}.
 }
 </style>
 <style>
+.poster-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.dropzone-link{display:block;color:inherit;text-decoration:none}
 .pagination{display:none;align-items:center;justify-content:center;gap:7px;margin:17px 0 6px}.pagination button{min-width:30px;height:30px;padding:0 8px;border:1px solid #ffffff19;border-radius:7px;background:#111334;color:#989abd;font-size:11px}.pagination button.active,.pagination button:hover{border-color:#9c58ff;background:#352060;color:#fff}.pagination button:disabled{opacity:.35;cursor:not-allowed}.pagination .page-label{margin:0 4px;color:#787ba7;font-size:11px}
 @media(max-width:560px){.pagination{display:flex}}
 </style>
@@ -58,7 +59,7 @@ function draw(){
   const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize));
   mobilePage=Math.min(Math.max(1,mobilePage),pageCount);
   const visible=mobile?filtered.slice((mobilePage-1)*pageSize,mobilePage*pageSize):filtered;
-  games.innerHTML=visible.map(g=>`<article class="game"><div class="poster" style="--bg-art:linear-gradient(135deg,${g[5]});--texture:radial-gradient(circle at 22% 22%,#ffffff66 0 3%,transparent 4%),linear-gradient(125deg,transparent 30%,#ffffff21 31% 36%,transparent 37%)" data-mark="${g[3]}"><span class="poster-art">${g[3]}</span><span class="tag">${g[2]}</span><button class="heart" onclick="like(this,event)">♥</button><div class="play-overlay"><button class="play-btn" onclick="openModal('${g[6]}')">PLAY DEMO</button></div><div class="poster-title">${g[4]}</div></div><div class="game-bottom"><strong>${g[6]}</strong><span>♡</span></div></article>`).join('');
+  games.innerHTML=visible.map(g=>{const isDropzone=g[6]==='Le Pharaoh';const wrapStart=isDropzone?'<a class="dropzone-link" href="https://stun0019.github.io/dropzone/" target="_blank" rel="noopener">':'';const wrapEnd=isDropzone?'</a>':'';const art=isDropzone?'<img class="poster-image" src="BANNER.png" alt="Le Pharaoh">':`<span class="poster-art">${g[3]}</span>`;return `<article class="game">${wrapStart}<div class="poster" style="--bg-art:linear-gradient(135deg,${g[5]});--texture:radial-gradient(circle at 22% 22%,#ffffff66 0 3%,transparent 4%),linear-gradient(125deg,transparent 30%,#ffffff21 31% 36%,transparent 37%)" data-mark="${g[3]}">${art}<span class="tag">${g[2]}</span><button class="heart" onclick="like(this,event)">♥</button>${isDropzone?'':'<div class="play-overlay"><button class="play-btn" onclick="openModal(\''+g[6]+'\')">PLAY DEMO</button></div>'}<div class="poster-title">${isDropzone?'':g[4]}</div></div><div class="game-bottom"><strong>${g[6]}</strong><span>♡</span></div>${wrapEnd}</article>`}).join('');
   const pager=document.getElementById('pagination');
   pager.innerHTML=mobile&&pageCount>1?`<button ${mobilePage===1?'disabled':''} onclick="changePage(-1)" aria-label="上一頁">‹</button><span class="page-label">${mobilePage} / ${pageCount}</span><button ${mobilePage===pageCount?'disabled':''} onclick="changePage(1)" aria-label="下一頁">›</button>`:'';
 }
