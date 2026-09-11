@@ -27,12 +27,16 @@ header{height:58px;display:flex;align-items:center;gap:28px;margin-bottom:18px}.
   .promo{grid-template-columns:1fr}.promo-card{min-height:82px;padding:14px 16px}.footer{flex-direction:column}
 }
 </style>
+<style>
+.pagination{display:none;align-items:center;justify-content:center;gap:7px;margin:17px 0 6px}.pagination button{min-width:30px;height:30px;padding:0 8px;border:1px solid #ffffff19;border-radius:7px;background:#111334;color:#989abd;font-size:11px}.pagination button.active,.pagination button:hover{border-color:#9c58ff;background:#352060;color:#fff}.pagination button:disabled{opacity:.35;cursor:not-allowed}.pagination .page-label{margin:0 4px;color:#787ba7;font-size:11px}
+@media(max-width:560px){.pagination{display:flex}}
+</style>
 </head>
 <body>
 <main class="page">
 <header><div class="brand"><div class="brand-mark">♠</div> ARCADE ROYALE</div><nav class="topnav"><button class="active">Lobby</button><button>Jackpots</button><button>Rewards</button><button>Leaderboard</button></nav><div class="spacer"></div><div class="account"><div class="balance"><span class="coin">✦</span><span id="coins">12,580</span><button onclick="claim()">+</button></div><div class="avatar">P</div></div></header>
 <div class="toolbar"><div class="toolbar-title"><h1>Game Lobby</h1><span>16 GAMES</span></div><div class="categories"><button class="category active" data-cat="all">All Games</button><button class="category" data-cat="slots">Slots</button><button class="category" data-cat="table">Table Games</button><button class="category" data-cat="new">New</button><button class="category" data-cat="jackpot">Jackpot</button></div><label class="search"><input id="search" type="search" placeholder="Search games..."></label></div>
-<section class="grid" id="games"></section>
+<section class="grid" id="games"></section><div class="pagination" id="pagination" aria-label="遊戲分頁"></div>
 <section class="promo"><div class="promo-card"><h2>Daily Bonus is ready</h2><p>Come back every day and collect more virtual coins.</p><button onclick="claim()">CLAIM 500</button></div><div class="promo-card gold"><h2>Royal Jackpot</h2><p>2,480,000 coins in the prize pool · LIVE</p><button onclick="notify('Jackpot lobby coming soon')">VIEW JACKPOT</button></div></section>
 <footer class="footer"><span>© 2026 ARCADE ROYALE · SOCIAL CASINO</span><span>For entertainment only · Virtual coins · No cash value</span></footer>
 </main>
@@ -43,6 +47,23 @@ const data=[
 ];let current='all';const games=document.getElementById('games');
 function draw(){const q=document.getElementById('search').value.toLowerCase();games.innerHTML=data.map(g=>{const show=(current==='all'||current===g[1]||current==='new'&&g[1]==='new'||current==='jackpot'&&g[1]==='jackpot')&&g[6].toLowerCase().includes(q);return `<article class="game ${show?'':'hidden'}"><div class="poster" style="--bg-art:linear-gradient(135deg,${g[5]});--texture:radial-gradient(circle at 22% 22%,#ffffff66 0 3%,transparent 4%),linear-gradient(125deg,transparent 30%,#ffffff21 31% 36%,transparent 37%);--title:#fff1ad" data-mark="${g[3]}"><span class="poster-art">${g[3]}</span><span class="tag">${g[2]}</span><button class="heart" onclick="like(this,event)">♥</button><div class="play-overlay"><button class="play-btn" onclick="openModal('${g[6]}')">PLAY DEMO</button></div><div class="poster-title">${g[4]}</div></div><div class="game-bottom"><strong>${g[6]}</strong><span>♡</span></div></article>`}).join('')}
 document.querySelectorAll('.category').forEach(b=>b.onclick=()=>{document.querySelectorAll('.category').forEach(x=>x.classList.remove('active'));b.classList.add('active');current=b.dataset.cat;draw()});document.getElementById('search').oninput=draw;function like(el,e){e.stopPropagation();el.classList.toggle('liked');notify(el.classList.contains('liked')?'Added to favorites':'Removed from favorites')}function claim(){document.getElementById('coins').textContent='13,080';notify('Daily bonus claimed  +500 Coins')}function notify(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2400)}function openModal(n){document.getElementById('modalTitle').textContent=n;document.getElementById('modal').classList.add('open')}function closeModal(){document.getElementById('modal').classList.remove('open');notify('Demo launched')}draw();
+</script>
+<script>
+let mobilePage=1;
+function draw(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const filtered=data.filter(g=>(current==='all'||current===g[1])&&g[6].toLowerCase().includes(q));
+  const mobile=window.matchMedia('(max-width:560px)').matches;
+  const pageSize=mobile?4:filtered.length;
+  const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize));
+  mobilePage=Math.min(Math.max(1,mobilePage),pageCount);
+  const visible=mobile?filtered.slice((mobilePage-1)*pageSize,mobilePage*pageSize):filtered;
+  games.innerHTML=visible.map(g=>`<article class="game"><div class="poster" style="--bg-art:linear-gradient(135deg,${g[5]});--texture:radial-gradient(circle at 22% 22%,#ffffff66 0 3%,transparent 4%),linear-gradient(125deg,transparent 30%,#ffffff21 31% 36%,transparent 37%)" data-mark="${g[3]}"><span class="poster-art">${g[3]}</span><span class="tag">${g[2]}</span><button class="heart" onclick="like(this,event)">♥</button><div class="play-overlay"><button class="play-btn" onclick="openModal('${g[6]}')">PLAY DEMO</button></div><div class="poster-title">${g[4]}</div></div><div class="game-bottom"><strong>${g[6]}</strong><span>♡</span></div></article>`).join('');
+  const pager=document.getElementById('pagination');
+  pager.innerHTML=mobile&&pageCount>1?`<button ${mobilePage===1?'disabled':''} onclick="changePage(-1)" aria-label="上一頁">‹</button><span class="page-label">${mobilePage} / ${pageCount}</span><button ${mobilePage===pageCount?'disabled':''} onclick="changePage(1)" aria-label="下一頁">›</button>`:'';
+}
+function changePage(step){mobilePage+=step;draw();document.getElementById('games').scrollIntoView({behavior:'smooth',block:'start'})}
+document.querySelectorAll('.category').forEach(b=>b.addEventListener('click',()=>{mobilePage=1;setTimeout(draw,0)}));document.getElementById('search').addEventListener('input',()=>{mobilePage=1;setTimeout(draw,0)});window.addEventListener('resize',()=>{mobilePage=1;draw()});draw();
 </script>
 </body>
 </html>
